@@ -1,0 +1,16 @@
+pandas
+numpy 
+faker
+python-dotenv
+pydantic
+sqlalchemy
+fastapi
+uvicorn
+streamlit
+chromadb
+sentence-transformers
+langchain
+langchain-community
+langchain-core
+langchain-groq
+langgraph

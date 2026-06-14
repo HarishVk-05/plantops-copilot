@@ -1,0 +1,5 @@
+machine_id,machine_name,machine_type,criticality,location
+PKG-L3,Line 3 Packaging Machine,Packaging,High,Plant A - Line 3
+CNV-B2,Conveyor Belt B2,Conveyor,Medium,Plant A - Transfer Zone
+MIX-R1,Mixer Reactor R1,Mixer,High,Plant B - Mixing Area
+CMP-A1,Air Compressor A1,Compressor,High,Utility Block

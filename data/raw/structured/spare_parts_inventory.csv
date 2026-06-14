@@ -1,0 +1,6 @@
+part_id,part_name,compatible_machine_type,stock_qty,reorder_level
+SP-001,Packaging Motor Bearing Kit,Packaging,4,2
+SP-002,Conveyor Belt Tracking Roller,Conveyor,7,3
+SP-003,Motor Cooling Fan Assembly,Packaging,2,1
+SP-004,Compressor Intake Filter,Compressor,1,2
+SP-005,Mixer Agitator Bearing,Mixer,3,1

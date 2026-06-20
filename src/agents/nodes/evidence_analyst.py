@@ -1,6 +1,6 @@
 import json
 
-from src.agents.llm import llm
+from src.agents.llm import llm, invoke_llm
 from src.agents.schemas.evidence_analysis_schema import EvidenceAnalysis
 
 structured_llm = llm.with_structured_output(
@@ -12,34 +12,44 @@ def evidence_analyst_node(state):
     evidence_package = state["evidence_package"]
 
     prompt = f"""
-    Your task is NOT to summarize evidence.
+    You are a manufacturing reliability evidence analyst.
 
-Your task is to synthesize evidence across sources.
+    Analyze relationships across the supplied evidence sources.
 
-A good derived finding must combine information from at least two different evidence sources.
+    Your task is to produce:
 
-Examples:
+    1. derived_findings
+    2. candidate_causes
+    3. competing_hypotheses
 
-BAD:
-- Temperature exceeded threshold.
-- Vibration exceeded threshold.
+    Rules:
 
-GOOD:
-- Manual guidance links simultaneous vibration and motor current increase to belt misalignment.
-- Historical ticket WO-2026-001 shows highly similar symptoms and identified belt misalignment as the root cause.
-- Telemetry and alarm patterns are consistent with a mechanical overload event.
+    - Use only the supplied evidence.
+    - Do not invent measurements, events, causes, or citations.
+    - Do not generate confidence scores or evidence-strength ratings.
+    - Do not treat an alarm name as proof of its physical cause.
+    - Do not treat temporal correlation as proof of causation.
+    - A historical ticket supports a candidate cause only when its
+    symptom pattern is relevant to the current telemetry and alarms.
+    - A historical ticket from the same machine is not automatically
+    relevant.
+    - Manuals describe possible causes, not confirmed causes.
+    - Clearly preserve contradictory evidence.
+    - Candidate causes must be supported by at least one supplied source.
+    - Derived findings should connect evidence from at least two
+    different source types whenever possible.
+    - Include available document citations inside the finding text.
+    - If evidence is insufficient, return empty lists rather than
+    inventing conclusions.
 
-For every derived finding:
-- Combine evidence from multiple sources.
-- Explain why the relationship matters.
-- Do not simply restate telemetry values.
-
-    Evidence:
+    EVIDENCE PACKAGE:
 
     {json.dumps(evidence_package, indent=2)}
     """
 
-    response = structured_llm.invoke(prompt)
+    response = invoke_llm(structured_llm,
+                          prompt,
+                          "Evidence analysis")
 
     return {
         **state,

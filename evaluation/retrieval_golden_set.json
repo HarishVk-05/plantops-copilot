@@ -1,0 +1,319 @@
+{
+  "version": "1.0",
+  "description": "Golden retrieval set for PlantOps Copilot production retrievers.",
+  "queries": [
+    {
+      "id": "K01",
+      "name": "Packaging vibration, current and jam pattern",
+      "retriever": "knowledge",
+      "query": "PKG-L3 has high vibration, rising motor current, and repeated jam alarms. Find likely causes and similar historical incidents.",
+      "machine_id": "PKG-L3",
+      "ranked_top_k": 8,
+      "relevance": {
+        "packing_machine_manual.md | 3. Likely Causes of Motor Overheating": 3,
+        "packing_machine_manual.md | 2. Overheating Symptoms": 1,
+        "WO-2026-001.md | Symptoms": 2,
+        "WO-2026-001.md | Root Cause": 3
+      },
+      "required_citation_groups": [
+        ["packing_machine_manual.md | 3. Likely Causes of Motor Overheating"],
+        ["WO-2026-001.md | Root Cause"]
+      ],
+      "forbidden_source_files": [
+        "compressor_a1_maintenance_guide.md",
+        "mixer_reactor_r1_manual.md",
+        "WO-2026-003.md",
+        "WO-2026-004.md"
+      ]
+    },
+    {
+      "id": "K02",
+      "name": "Packaging overheating and thermal trip",
+      "retriever": "knowledge",
+      "query": "PKG-L3 motor is overheating and repeatedly trips on temperature. Retrieve the symptom guidance and the closest historical incident.",
+      "machine_id": "PKG-L3",
+      "ranked_top_k": 8,
+      "relevance": {
+        "packing_machine_manual.md | 2. Overheating Symptoms": 3,
+        "packing_machine_manual.md | 3. Likely Causes of Motor Overheating": 2,
+        "WO-2026-002.md | Symptoms": 2,
+        "WO-2026-002.md | Root Cause": 3
+      },
+      "required_citation_groups": [
+        ["packing_machine_manual.md | 2. Overheating Symptoms"],
+        ["WO-2026-002.md | Root Cause"]
+      ],
+      "forbidden_source_files": [
+        "compressor_a1_maintenance_guide.md",
+        "mixer_reactor_r1_manual.md",
+        "WO-2026-003.md",
+        "WO-2026-004.md"
+      ]
+    },
+    {
+      "id": "K03",
+      "name": "Compressor low-pressure incident",
+      "retriever": "knowledge",
+      "query": "CMP-A1 discharge pressure is low during high production demand. Retrieve possible causes and matching maintenance history.",
+      "machine_id": "CMP-A1",
+      "ranked_top_k": 8,
+      "relevance": {
+        "compressor_a1_maintenance_guide.md | 2. Pressure Drop": 3,
+        "compressor_a1_maintenance_guide.md | 3. Recommended Troubleshooting": 2,
+        "WO-2026-003.md | Symptoms": 2,
+        "WO-2026-003.md | Root Cause": 3
+      },
+      "required_citation_groups": [
+        ["compressor_a1_maintenance_guide.md | 2. Pressure Drop"],
+        ["WO-2026-003.md | Root Cause"]
+      ],
+      "forbidden_source_files": [
+        "packing_machine_manual.md",
+        "mixer_reactor_r1_manual.md",
+        "WO-2026-001.md",
+        "WO-2026-002.md",
+        "WO-2026-004.md"
+      ]
+    },
+    {
+      "id": "K04",
+      "name": "Compressor diagnostic procedure",
+      "retriever": "knowledge",
+      "query": "How should CMP-A1 be checked for air leaks, intake filter restriction, and pressure sensor problems?",
+      "machine_id": "CMP-A1",
+      "ranked_top_k": 8,
+      "relevance": {
+        "compressor_a1_maintenance_guide.md | 3. Recommended Troubleshooting": 3,
+        "compressor_a1_maintenance_guide.md | 2. Pressure Drop": 2
+      },
+      "required_citation_groups": [
+        ["compressor_a1_maintenance_guide.md | 3. Recommended Troubleshooting"]
+      ],
+      "forbidden_source_files": [
+        "packing_machine_manual.md",
+        "mixer_reactor_r1_manual.md",
+        "WO-2026-001.md",
+        "WO-2026-002.md",
+        "WO-2026-004.md"
+      ]
+    },
+    {
+      "id": "K05",
+      "name": "Conveyor misalignment symptoms",
+      "retriever": "knowledge",
+      "query": "CNV-B2 shows increased vibration, higher motor load, uneven belt wear, and repeated jam alarms.",
+      "machine_id": "CNV-B2",
+      "ranked_top_k": 8,
+      "relevance": {
+        "conveyor_maintenance_sop.md | 2. Belt Misalignment": 3,
+        "conveyor_maintenance_sop.md | Inspection Procedure": 1
+      },
+      "required_citation_groups": [
+        ["conveyor_maintenance_sop.md | 2. Belt Misalignment"]
+      ],
+      "forbidden_source_files": [
+        "packing_machine_manual.md",
+        "compressor_a1_maintenance_guide.md",
+        "mixer_reactor_r1_manual.md"
+      ]
+    },
+    {
+      "id": "K06",
+      "name": "Conveyor inspection procedure",
+      "retriever": "knowledge",
+      "query": "Inspect CNV-B2 belt tracking, roller alignment, tension bolts, bearings, and foreign material.",
+      "machine_id": "CNV-B2",
+      "ranked_top_k": 8,
+      "relevance": {
+        "conveyor_maintenance_sop.md | Inspection Procedure": 3,
+        "conveyor_maintenance_sop.md | 2. Belt Misalignment": 2
+      },
+      "required_citation_groups": [
+        ["conveyor_maintenance_sop.md | Inspection Procedure"]
+      ],
+      "forbidden_source_files": [
+        "packing_machine_manual.md",
+        "compressor_a1_maintenance_guide.md",
+        "mixer_reactor_r1_manual.md"
+      ]
+    },
+    {
+      "id": "K07",
+      "name": "Mixer high-current and noise pattern",
+      "retriever": "knowledge",
+      "query": "MIX-R1 has high motor current, high vibration, reduced mixing speed, and abnormal agitator noise. Find relevant guidance and history.",
+      "machine_id": "MIX-R1",
+      "ranked_top_k": 8,
+      "relevance": {
+        "mixer_reactor_r1_manual.md | 2. Agitator Overload": 2,
+        "mixer_reactor_r1_manual.md | 3. Symptoms": 3,
+        "WO-2026-004.md | Symptoms": 2,
+        "WO-2026-004.md | Root Cause": 3
+      },
+      "required_citation_groups": [
+        ["mixer_reactor_r1_manual.md | 3. Symptoms"],
+        ["WO-2026-004.md | Root Cause"]
+      ],
+      "forbidden_source_files": [
+        "packing_machine_manual.md",
+        "compressor_a1_maintenance_guide.md",
+        "WO-2026-001.md",
+        "WO-2026-002.md",
+        "WO-2026-003.md"
+      ]
+    },
+    {
+      "id": "K08",
+      "name": "Unknown machine has no scoped evidence",
+      "retriever": "knowledge",
+      "query": "PMP-X9 is making noise and losing pressure. Retrieve its maintenance evidence.",
+      "machine_id": "PMP-X9",
+      "ranked_top_k": 8,
+      "relevance": {},
+      "required_citation_groups": [],
+      "forbidden_source_files": [],
+      "expect_empty": true
+    },
+    {
+      "id": "S01",
+      "name": "Lockout-tagout sequence and PPE",
+      "retriever": "safety",
+      "query": "Before opening machine guards or electrical panels, retrieve the complete lockout-tagout sequence and required PPE.",
+      "ranked_top_k": 5,
+      "relevance": {
+        "lockout_tagout_safety_sop.md | 2. Required Before Maintenance": 3,
+        "lockout_tagout_safety_sop.md | Required PPE": 3
+      },
+      "required_citation_groups": [
+        ["lockout_tagout_safety_sop.md | 2. Required Before Maintenance"],
+        ["lockout_tagout_safety_sop.md | Required PPE"]
+      ],
+      "forbidden_source_files": []
+    },
+    {
+      "id": "S02",
+      "name": "Prohibited maintenance actions",
+      "retriever": "safety",
+      "query": "What actions are prohibited while equipment is energized, guards are bypassed, or a conveyor belt is being adjusted?",
+      "ranked_top_k": 5,
+      "relevance": {
+        "lockout_tagout_safety_sop.md | 3. Prohibited Actions": 3,
+        "lockout_tagout_safety_sop.md | 2. Required Before Maintenance": 1
+      },
+      "required_citation_groups": [
+        ["lockout_tagout_safety_sop.md | 3. Prohibited Actions"]
+      ],
+      "forbidden_source_files": []
+    },
+    {
+      "id": "S03",
+      "name": "Supervisor approval actions",
+      "retriever": "safety",
+      "query": "Retrieve supervisor approval requirements for motor replacement, panel modification, interlock bypass, and restart after repeated thermal trip.",
+      "ranked_top_k": 5,
+      "relevance": {
+        "lockout_tagout_safety_sop.md | 4. High Risk Actions": 3
+      },
+      "required_citation_groups": [
+        ["lockout_tagout_safety_sop.md | 4. High Risk Actions"]
+      ],
+      "forbidden_source_files": []
+    },
+    {
+      "id": "W01",
+      "name": "Packaging belt-alignment work-order evidence",
+      "retriever": "work_order",
+      "query": "PKG-L3 belt misalignment correction procedure, required tools, required skills, verification, acceptance criteria, and duration.",
+      "machine_id": "PKG-L3",
+      "ranked_top_k": 4,
+      "relevance": {
+        "packing_machine_manual.md | 4. Maintenance Procedure For Belt Misalignment": 3,
+        "packing_machine_manual.md | Required Tools": 2,
+        "packing_machine_manual.md | Required Skills": 2,
+        "packing_machine_manual.md | Verification Procedure": 2,
+        "packing_machine_manual.md | Acceptance Criteria": 2,
+        "packing_machine_manual.md | Estimated Duration": 1
+      },
+      "required_citation_groups": [
+        ["packing_machine_manual.md | 4. Maintenance Procedure For Belt Misalignment"],
+        ["packing_machine_manual.md | Required Tools"],
+        ["packing_machine_manual.md | Required Skills"],
+        ["packing_machine_manual.md | Verification Procedure", "packing_machine_manual.md | Acceptance Criteria"],
+        ["packing_machine_manual.md | Estimated Duration"]
+      ],
+      "forbidden_source_files": [
+        "compressor_a1_maintenance_guide.md",
+        "mixer_reactor_r1_manual.md"
+      ]
+    },
+    {
+      "id": "W02",
+      "name": "Conveyor correction work-order evidence",
+      "retriever": "work_order",
+      "query": "CNV-B2 belt tracking correction, tools, skills, verification conditions, acceptance criteria, and estimated duration.",
+      "machine_id": "CNV-B2",
+      "ranked_top_k": 4,
+      "relevance": {
+        "conveyor_maintenance_sop.md | Corrective Procedure": 3,
+        "conveyor_maintenance_sop.md | Required Tools": 2,
+        "conveyor_maintenance_sop.md | Required Skills": 2,
+        "conveyor_maintenance_sop.md | Verification Procedure": 2,
+        "conveyor_maintenance_sop.md | Acceptance Criteria": 2,
+        "conveyor_maintenance_sop.md | Estimated Duration": 1
+      },
+      "required_citation_groups": [
+        ["conveyor_maintenance_sop.md | Corrective Procedure"],
+        ["conveyor_maintenance_sop.md | Required Tools"],
+        ["conveyor_maintenance_sop.md | Required Skills"],
+        ["conveyor_maintenance_sop.md | Verification Procedure", "conveyor_maintenance_sop.md | Acceptance Criteria"],
+        ["conveyor_maintenance_sop.md | Estimated Duration"]
+      ],
+      "forbidden_source_files": [
+        "packing_machine_manual.md",
+        "compressor_a1_maintenance_guide.md",
+        "mixer_reactor_r1_manual.md"
+      ]
+    },
+    {
+      "id": "W03",
+      "name": "Compressor troubleshooting work-order evidence",
+      "retriever": "work_order",
+      "query": "CMP-A1 low-pressure troubleshooting: inspect leaks, check intake filter differential pressure, verify the sensor, and verify normal pressure.",
+      "machine_id": "CMP-A1",
+      "ranked_top_k": 4,
+      "relevance": {
+        "compressor_a1_maintenance_guide.md | 3. Recommended Troubleshooting": 3,
+        "compressor_a1_maintenance_guide.md | 2. Pressure Drop": 2,
+        "compressor_a1_maintenance_guide.md | 1. Normal Operating Range": 2
+      },
+      "required_citation_groups": [
+        ["compressor_a1_maintenance_guide.md | 3. Recommended Troubleshooting"],
+        ["compressor_a1_maintenance_guide.md | 1. Normal Operating Range"]
+      ],
+      "forbidden_source_files": [
+        "packing_machine_manual.md",
+        "mixer_reactor_r1_manual.md"
+      ]
+    },
+    {
+      "id": "W04",
+      "name": "Mixer overload action evidence",
+      "retriever": "work_order",
+      "query": "MIX-R1 agitator overload: stop the mixer, verify the batch recipe, inspect obstruction and bearing housing, then escalate repeated overload.",
+      "machine_id": "MIX-R1",
+      "ranked_top_k": 4,
+      "relevance": {
+        "mixer_reactor_r1_manual.md | 4. Action": 3,
+        "mixer_reactor_r1_manual.md | 2. Agitator Overload": 2,
+        "mixer_reactor_r1_manual.md | 3. Symptoms": 1
+      },
+      "required_citation_groups": [
+        ["mixer_reactor_r1_manual.md | 4. Action"]
+      ],
+      "forbidden_source_files": [
+        "packing_machine_manual.md",
+        "compressor_a1_maintenance_guide.md"
+      ]
+    }
+  ]
+}

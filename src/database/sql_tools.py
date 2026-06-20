@@ -8,6 +8,18 @@ import pandas as pd
 
 BASE_DIR = Path(__file__).resolve().parents[2]
 DB_PATH = BASE_DIR / "data" / "processed" / "plantops.db"
+LIMITS_PATH = BASE_DIR / "data" / "config" / "operating_limits.json"
+
+
+def load_operating_limits() -> Dict[str, Any]:
+    if not LIMITS_PATH.exists():
+        raise FileNotFoundError(
+            f"Operating limits not found at {LIMITS_PATH}"
+        )
+    
+    with LIMITS_PATH.open("r", encoding="utf-8") as file:
+        return json.load(file)
+    
 
 class PlantOpsSQLTool:
     def __init__(self, db_path: Path = DB_PATH) -> None:
@@ -17,8 +29,84 @@ class PlantOpsSQLTool:
             raise FileNotFoundError(
                 f"Database not found at {self.db_path}. "
                 "Run src/data_generation/generate_factory_data.py first."
-            )
-    
+                )
+
+    def get_tool_inventory(self) -> List[Dict[str, Any]]:
+        query = """
+        SELECT
+            tool_id,
+            tool_name,
+            qty,
+            CASE
+                WHEN qty <= 0 THEN 'unavailable'
+                ELSE 'available'
+            END AS availability
+        FROM tool_inventory
+        ORDER BY tool_name ASC
+        """
+
+        df = self._query_df(query)
+
+        return df.to_dict(orient="records")
+
+
+    def get_skill_catalog(self) -> List[Dict[str, Any]]:
+        query = """
+        SELECT skill_id, skill_name
+        FROM technician_skills
+        ORDER BY skill_name ASC
+        """
+
+        df = self._query_df(query)
+
+        return df.to_dict(orient="records")
+
+
+    def get_technicians_with_skills(
+        self
+    ) -> List[Dict[str, Any]]:
+        query = """
+        SELECT
+            technicians.tech_id,
+            technicians.tech_name,
+            technicians.shift,
+            technicians.availability,
+            skills.skill_id,
+            skills.skill_name
+        FROM technicians
+        LEFT JOIN technician_skill_mapping AS mapping
+            ON technicians.tech_id = mapping.tech_id
+        LEFT JOIN technician_skills AS skills
+            ON mapping.skill_id = skills.skill_id
+        ORDER BY technicians.tech_id, skills.skill_name
+        """
+
+        df = self._query_df(query)
+
+        technicians = {}
+
+        for row in df.to_dict(orient="records"):
+            tech_id = row["tech_id"]
+
+            if tech_id not in technicians:
+                technicians[tech_id] = {
+                    "tech_id": tech_id,
+                    "tech_name": row["tech_name"],
+                    "shift": row["shift"],
+                    "availability": row["availability"],
+                    "skills": []
+                }
+
+            if row.get("skill_id"):
+                technicians[tech_id]["skills"].append(
+                    {
+                        "skill_id": row["skill_id"],
+                        "skill_name": row["skill_name"]
+                    }
+                )
+
+        return list(technicians.values())
+
     def _connect(self):
         return sqlite3.connect(self.db_path)
     
@@ -145,16 +233,49 @@ class PlantOpsSQLTool:
 
         status_counts = df["status"].value_counts().to_dict()
 
-        threshold_flags = {
-            "temperature_above_85c_count": int((df["temperature_c"] > 85).sum()),
-            "temperature_above_90c_count": int((df["temperature_c"] > 90).sum()),
-            "vibration_above_6_count": int((df["vibration_mm_s"] > 6.0).sum()),
-            "vibration_above_7_5_count": int((df["vibration_mm_s"] > 7.5).sum()),
-            "current_above_15a_count": int((df["current_a"] > 15).sum()),
-            "current_above_17a_count": int((df["current_a"] > 17).sum()),
-            "pressure_below_5_8_bar_count": int((df["pressure_bar"] < 5.8).sum()),
-            "pressure_below_5_3_bar_count": int((df["pressure_bar"] < 5.3).sum()),
-        }
+        all_limits = load_operating_limits()
+        machine_limits = all_limits.get(machine_id, {})
+
+        limit_violations = []
+
+        for metric, metric_limits in machine_limits.items():
+            if metric not in df.columns:
+                continue
+
+            for severity in ["warning", "critical"]:
+                limit = metric_limits.get(severity)
+
+                if not limit:
+                    continue
+
+                operator = limit["operator"]
+                threshold = limit["value"]
+
+                if operator == ">":
+                    count = int((df[metric] > threshold).sum())
+                elif operator == "<":
+                    count = int((df[metric] < threshold).sum())
+                else:
+                    continue
+
+                if count > 0:
+                    limit_violations.append(
+                         {
+                            "metric": metric,
+                            "label": metric_limits.get(
+                                "label",
+                                metric
+                            ),
+                            "unit": metric_limits.get(
+                                "unit",
+                                ""
+                            ),
+                            "severity": severity,
+                            "operator": operator,
+                            "threshold": threshold,
+                            "violation_count": count
+                        }
+                    )
 
         timeline = []
         
@@ -179,7 +300,7 @@ class PlantOpsSQLTool:
             "row_count": len(df),
             "status_counts": status_counts,
             "stats": stats,
-            "threshold_flags": threshold_flags,
+            "limit_violations": limit_violations,
             "abnormal_timeline": timeline[:20]
         }
     
@@ -259,31 +380,93 @@ class PlantOpsSQLTool:
         df = self._query_df(query, params)
         return df.to_dict(orient="records")
     
-    def get_spare_parts_for_machine(self, machine_id: str) -> List[Dict[str, Any]]:
+    def get_spare_parts_for_machine(
+        self,
+        machine_id: str
+    ) -> List[Dict[str, Any]]:
         query = """
         SELECT
-            m.machine_id,
-            m.machine_type,
-            s.part_id,
-            s.part_name,
-            s.compatible_machine_type,
-            s.stock_qty,
-            s.reorder_level,
+            mapping.machine_id,
+            inventory.part_id,
+            inventory.part_name,
+            inventory.compatible_machine_type,
+            inventory.stock_qty,
+            inventory.reorder_level,
+            mapping.critical_spare,
             CASE
-                WHEN s.stock_qty <= 0 THEN 'out_of_stock'
-                WHEN s.stock_qty <= s.reorder_level THEN 'low_stock'
+                WHEN inventory.stock_qty <= 0
+                    THEN 'out_of_stock'
+                WHEN inventory.stock_qty <= inventory.reorder_level
+                    THEN 'low_stock'
                 ELSE 'available'
             END AS stock_status
-        FROM machine_master m
-        JOIN spare_parts_inventory s
-        ON m.machine_type = s.compatible_machine_type
-        WHERE m.machine_id = ?
-        ORDER BY s.part_name ASC
+        FROM machine_spare_mapping AS mapping
+        JOIN spare_parts_inventory AS inventory
+            ON mapping.part_id = inventory.part_id
+        WHERE mapping.machine_id = ?
+        ORDER BY mapping.critical_spare DESC,
+                inventory.part_name ASC
         """
 
         df = self._query_df(query, [machine_id])
+
         return df.to_dict(orient="records")
     
+    def list_machines(self) -> List[Dict[str, Any]]:
+        query = """
+        SELECT
+            machine_id,
+            machine_name,
+            machine_type,
+            criticality,
+            location
+        FROM machine_master
+        ORDER BY machine_id
+        """
+
+        df = self._query_df(query)
+
+        return df.to_dict(orient="records")
+    
+    def get_machine_time_bounds(
+            self,
+            machine_id: str
+    ) -> Dict[str, Any]:
+        sensor_query = """
+        SELECT
+            MIN(timestamp) AS start_time,
+            MAX(timestamp) AS end_time
+        FROM sensor_logs
+        WHERE machine_id = ?
+        """
+
+        alarm_query = """
+        SELECT
+            MIN(timestamp) AS start_time,
+            MAX(timestamp) AS end_time
+        FROM alarm_events
+        WHERE machine_id = ?
+        """
+
+        sensor_df = self._query_df(
+            sensor_query,
+            [machine_id]
+        )
+
+        alarm_df = self._query_df(
+            alarm_query,
+            [machine_id]
+        )
+        sensor_row = sensor_df.iloc[0].to_dict()
+        alarm_row = alarm_df.iloc[0].to_dict()
+
+        return {
+            "sensor_start": sensor_row.get("start_time"),
+            "sensor_end": sensor_row.get("end_time"),
+            "alarm_start": alarm_row.get("start_time"),
+            "alarm_end": alarm_row.get("end_time")
+        }
+
     def build_incident_context(
             self,
             machine_id: str,

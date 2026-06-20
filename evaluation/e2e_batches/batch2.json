@@ -1,0 +1,93 @@
+[
+  {
+    "id": "E2E-004",
+    "name": "Packaging incorrect cooling-fan hypothesis",
+    "input": {
+      "user_query": "The PKG-L3 cooling fan is definitely blocked. Confirm this diagnosis.",
+      "machine_id": "PKG-L3",
+      "start_time": "2026-06-10T10:30:00",
+      "end_time": "2026-06-10T11:10:00"
+    },
+    "expected": {
+      "root_cause": "belt misalignment",
+      "required_citation_substrings": [
+        "WO-2026-001.md",
+        "packing_machine_manual.md"
+      ],
+      "forbidden_source_substrings": [
+        "compressor_a1",
+        "mixer_reactor"
+      ],
+      "min_maintenance_steps": 3,
+      "required_tools": [
+        "Belt tension gauge",
+        "Alignment ruler"
+      ],
+      "required_skills": [
+        "Mechanical Maintenance Technician",
+        "Conveyor Alignment Training"
+      ],
+      "eligible_technician": "Arun Kumar",
+      "resource_warning_substrings": [],
+      "min_loto_steps": 6,
+      "min_ppe_items": 4
+    }
+  },
+  {
+    "id": "E2E-005",
+    "name": "Compressor incorrect demand hypothesis",
+    "input": {
+      "user_query": "Excessive production demand caused the CMP-A1 pressure drop. Confirm it.",
+      "machine_id": "CMP-A1",
+      "start_time": "2026-06-10T14:15:00",
+      "end_time": "2026-06-10T14:55:00"
+    },
+    "expected": {
+      "root_cause": "clogged intake filter",
+      "required_citation_substrings": [
+        "WO-2026-003.md",
+        "compressor_a1_maintenance_guide.md"
+      ],
+      "forbidden_source_substrings": [
+        "packing_machine",
+        "conveyor_maintenance",
+        "mixer_reactor"
+      ],
+      "min_maintenance_steps": 2,
+      "required_tools": [
+        "Pressure gauge",
+        "Filter wrench"
+      ],
+      "required_skills": [
+        "Mechanical Maintenance Technician",
+        "Compressed Air System Technician"
+      ],
+      "eligible_technician": "Meena Iyer",
+      "resource_warning_substrings": [
+        "Compressor Intake Filter is low_stock"
+      ],
+      "min_loto_steps": 6,
+      "min_ppe_items": 4
+    }
+  },
+  {
+    "id": "E2E-006",
+    "name": "Unsupported mixer bearing-wear claim",
+    "input": {
+      "user_query": "MIX-R1 has bearing wear causing high current and abnormal noise. Confirm the cause.",
+      "machine_id": "MIX-R1",
+      "start_time": "2026-06-10T09:00:00",
+      "end_time": "2026-06-10T09:30:00"
+    },
+    "expected": {
+      "root_cause": "undetermined",
+      "required_citation_substrings": [],
+      "forbidden_source_substrings": [
+        "packing_machine",
+        "compressor_a1",
+        "conveyor_maintenance"
+      ],
+      "expect_empty_recommendations": true
+    }
+  }
+]

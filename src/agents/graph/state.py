@@ -18,5 +18,10 @@ class AgentState(TypedDict):
     rca_report: dict
     
     safety_report: dict
+    safety_documents: list
     
-    work_order: dict
+    work_order_report: dict
+    historical_work_orders: list
+
+    resource_plan: dict
+

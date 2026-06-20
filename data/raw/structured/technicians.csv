@@ -1,0 +1,5 @@
+tech_id,tech_name,skills,shift,availability
+TECH-001,Arun Kumar,SK-001|Mechanical Maintenance Technician; SK-003|Lockout Tagout Certified; SK-004|Conveyor Alignment Training,Day,Available
+TECH-002,Priya Sharma,SK-001|Mechanical Maintenance Technician; SK-005|Bearing Replacement Specialist,Day,Available
+TECH-003,Rahul Verma,SK-002|Electrical Technician; SK-003|Lockout Tagout Certified; SK-006|Compressed Air System Technician,Night,Busy
+TECH-004,Meena Iyer,SK-001|Mechanical Maintenance Technician; SK-005|Bearing Replacement Specialist; SK-006|Compressed Air System Technician,Day,Available

@@ -1,4 +1,5 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+
 from typing import List
 
 class RCAReport(BaseModel):
@@ -7,12 +8,10 @@ class RCAReport(BaseModel):
 
     likely_root_cause: str
 
-    evidence_strength: str # (strong, moderate, weak, insufficient)
+    supporting_evidence: List[str] = Field(default_factory=list)
 
-    supporting_evidence: List[str]
+    contradictory_evidence: list[str] = Field(default_factory=list)
 
-    contradictory_evidence: list[str]
+    recommendations: List[str] = Field(default_factory=list)
 
-    recommendations: List[str]
-
-    citations: list[str]
+    citations: list[str] = Field(default_factory = list)

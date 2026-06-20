@@ -1,1 +1,16 @@
-/.env
+/.env# Secrets
+.env
+
+# Pytest cache
+.pytest_cache/
+
+# Python bytecode/cache generated in this project
+__pycache__/
+**/__pycache__/
+*.pyc
+
+# Generated processed database/vector index
+data/processed/
+
+# Generated evaluation outputs
+evaluation/results/

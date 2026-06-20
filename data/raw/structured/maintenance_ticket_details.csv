@@ -1,0 +1,5 @@
+ticket_id,root_cause_category,parts_used,skills_used,verification_result,work_outcome
+WO-2026-001,Mechanical Alignment,SP-002 | Conveyor Belt Tracking Roller,SK-001 | Mechanical Maintenance Technician; SK-003 | Lockout Tagout Certified; SK-004 | Conveyor Alignment Training,Vibration reduced from 7.2 mm/s to 4.3 mm/s; no jam alarms observed after restart.,Resolved
+WO-2026-002,Cooling System Blockage,SP-003 | Motor Cooling Fan Assembly,SK-001 | Mechanical Maintenance Technician,Motor temperature returned below 78°C after a 5-minute run; no thermal trip alarm recurred.,Resolved
+WO-2026-003,Filter Blockage,SP-004 | Compressor Intake Filter,SK-001 | Mechanical Maintenance Technician; SK-006 | Compressed Air System Technician,Discharge pressure recovered to 7.1 bar; no low-pressure alarm within 30 minutes of restart.,Resolved
+WO-2026-004,Bearing Wear,SP-005 | Mixer Agitator Bearing,SK-001 | Mechanical Maintenance Technician; SK-005 | Bearing Replacement Specialist,Motor current returned below 18A; vibration reduced to 4.8 mm/s; no overload alarm after restart.,Resolved

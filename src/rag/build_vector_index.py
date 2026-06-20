@@ -5,6 +5,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional
 
+from src.rag.document_classifier import get_document_category
+
 import chromadb
 from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
 
@@ -129,6 +131,23 @@ def chunk_text_by_words(
     
     return chunks
 
+def extract_machine_id(text: str) -> str:
+    machine_ids = list(
+        dict.fromkeys(
+            re.findall(
+                r"\b[A-Z]{3}-[A-Z0-9]+\b",
+                text
+            )
+        )
+    )
+    if len(machine_ids) == 1:
+        return machine_ids[0]
+    
+    if not machine_ids:
+        return "GLOBAL"
+    
+    return "MULTI"
+
 def stable_hash(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
 
@@ -164,7 +183,8 @@ def build_chunks(
 
         source_type = detect_source_type(path)
         title = extract_title(text, fallback=path.stem)
-
+        document_category = get_document_category(path.name)
+        machine_id = extract_machine_id(text)
         sections = split_markdown_sections(text)
 
         for section_index, section in enumerate(sections):
@@ -188,6 +208,8 @@ def build_chunks(
                     "source_file": path.name,
                     "source_path": str(path.relative_to(BASE_DIR)),
                     "source_type": source_type,
+                    "document_category": document_category,
+                    "machine_id": machine_id,
                     "document_title": title,
                     "heading": section_heading,
                     "section_index": str(section_index),

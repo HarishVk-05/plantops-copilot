@@ -1,3 +1,5 @@
+from functools import lru_cache
+
 import argparse
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -12,46 +14,108 @@ VECTOR_DIR = BASE_DIR / "data" / "processed" / "chroma_db"
 DEFAULT_COLLECTION_NAME = "plantops_documents"
 DEFAULT_EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 
+@lru_cache(maxsize=4)
 def get_collection(
-        collection_name: str = DEFAULT_COLLECTION_NAME,
-        embedding_model: str = DEFAULT_EMBEDDING_MODEL
-    ):
-    embedding_function = SentenceTransformerEmbeddingFunction(
-        model_name = embedding_model
-    )
+    collection_name: str = DEFAULT_COLLECTION_NAME,
+    embedding_model: str = DEFAULT_EMBEDDING_MODEL
+):
+    try:
+        embedding_function = (
+            SentenceTransformerEmbeddingFunction(model_name=embedding_model)
+        )
 
-    client = chromadb.PersistentClient(path=str(VECTOR_DIR))
+        client = chromadb.PersistentClient(path=str(VECTOR_DIR))
 
-    collection = client.get_collection(
-        name = collection_name,
-        embedding_function=embedding_function
-    )
-
-    return collection
+        return client.get_collection(
+            name=collection_name,
+            embedding_function=embedding_function
+        )
+    
+    except Exception as exc:
+        raise RuntimeError(
+            "Unable to load the ChromaDB collection or "
+            "embedding model. Run:\n"
+            "python -m src.rag.build_vector_index --reset"
+        ) from exc
 
 def search_documents(
         query: str,
         top_k: int = 5,
         source_type: Optional[str] = None,
+        document_category = None,
+        source_file: Optional[str] = None,
+        machine_id: Optional[str] = None,
         collection_name: str = DEFAULT_COLLECTION_NAME,
         embedding_model: str = DEFAULT_EMBEDDING_MODEL
 ) -> List[Dict[str, Any]]:
+    
+    if not query or not query.strip():
+        raise ValueError(
+            "The retrieval query cannot be empty."
+        )
+    
+    if top_k <= 0:
+        raise ValueError(
+            "top_k must be greater than zero."
+        )
+    
     collection = get_collection(
         collection_name = collection_name,
         embedding_model=embedding_model
     )
     
-    where_filter = None
-    
+    conditions = []
+
     if source_type:
-        where_filter = {"source_type": source_type}
+        conditions.append(
+            {"source_type": source_type}
+        )
     
-    results = collection.query(
-        query_texts=[query],
-        n_results=top_k,
-        where=where_filter,
-        include=["documents", "metadatas", "distances"]
-    )
+    if document_category:
+        conditions.append(
+            {"document_category": document_category}
+        )
+    
+    if machine_id:
+        conditions.append(
+            {"machine_id": machine_id}
+        )
+    
+    if source_file:
+        conditions.append(
+            {"source_file": source_file}
+        )
+    
+    if len(conditions) == 1:
+        where_clause = conditions[0]
+    elif len(conditions) > 1:
+        where_clause = {
+            "$and": conditions
+        }
+    else:
+        where_clause = None
+
+    try:
+        document_count = collection.count()
+
+        if document_count == 0:
+            return []
+        
+        results = collection.query(
+            query_texts = [query.strip()],
+            n_results= min(top_k, document_count),
+            where= where_clause,
+            include=[
+                "documents",
+                "metadatas",
+                "distances"
+            ]
+        )
+    except Exception as exc:
+        raise RuntimeError(
+            "Document retrieval failed. Check the "
+            "ChromaDB index and embedding model."
+        ) from exc
 
     output = []
 

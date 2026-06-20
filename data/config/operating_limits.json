@@ -1,0 +1,30 @@
+{
+  "PKG-L3": {
+    "temperature_c": {
+      "label": "Motor temperature",
+      "unit": "°C",
+      "warning": {"operator": ">", "value": 85},
+      "critical": {"operator": ">", "value": 90}
+    },
+    "vibration_mm_s": {
+      "label": "Vibration",
+      "unit": "mm/s",
+      "warning": {"operator": ">", "value": 6.0},
+      "critical": {"operator": ">", "value": 7.5}
+    },
+    "current_a": {
+      "label": "Motor current",
+      "unit": "A",
+      "warning": {"operator": ">", "value": 15},
+      "critical": {"operator": ">", "value": 17}
+    }
+  },
+  "CMP-A1": {
+    "pressure_bar": {
+      "label": "Discharge pressure",
+      "unit": "bar",
+      "warning": {"operator": "<", "value": 5.8},
+      "critical": {"operator": "<", "value": 5.3}
+    }
+  }
+}

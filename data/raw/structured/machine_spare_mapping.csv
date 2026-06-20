@@ -1,0 +1,6 @@
+machine_id,part_id,critical_spare
+PKG-L3,SP-001,1
+PKG-L3,SP-003,1
+CNV-B2,SP-002,1
+CMP-A1,SP-004,1
+MIX-R1,SP-005,1

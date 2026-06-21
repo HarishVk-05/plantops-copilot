@@ -1,7 +1,32 @@
+import streamlit as st
+import os
+
+try:
+    if "GROQ_API_KEY" in st.secrets:
+        os.environ.setdefault(
+            "GROQ_API_KEY",
+            st.secrets["GROQ_API_KEY"]
+        )
+except Exception:
+    pass
+
+
+@st.cache_resource(show_spinner=False)
+def prepare_runtime_artifacts():
+    from src.bootstrap_runtime import ensure_runtime_artifacts
+
+    return ensure_runtime_artifacts()
+
+
+with st.spinner("Preparing PlantOps runtime data..."):
+    runtime_status = prepare_runtime_artifacts()
+
+
+
 from datetime import datetime, timedelta
 
 import pandas as pd
-import streamlit as st
+
 
 from src.database.sql_tools import PlantOpsSQLTool
 
@@ -16,6 +41,47 @@ STAGE_LABELS = {
     "work_order_agent": "Work order created",
     "resource_planner": "Resources matched"
 }
+
+
+
+SAMPLE_INPUTS = [
+    {
+        "id": "pkg_outage",
+        "name": "Packaging outage RCA",
+        "machine_id": "PKG-L3",
+        "user_query": "PKG-L3 is down. Find out why.",
+        "start_time": "2026-06-10T10:30:00",
+        "end_time": "2026-06-10T11:10:00",
+        "caption": "Expected: belt misalignment with work order and resources."
+    },
+    {
+        "id": "cmp_pressure",
+        "name": "Compressor pressure drop",
+        "machine_id": "CMP-A1",
+        "user_query": "CMP-A1 pressure looks wrong. Investigate.",
+        "start_time": "2026-06-10T14:15:00",
+        "end_time": "2026-06-10T14:55:00",
+        "caption": "Expected: clogged intake filter and low-stock spare warning."
+    },
+    {
+        "id": "cnv_health",
+        "name": "Normal conveyor health check",
+        "machine_id": "CNV-B2",
+        "user_query": "Perform a routine health check on CNV-B2. No fault has been reported.",
+        "start_time": "2026-06-10T09:00:00",
+        "end_time": "2026-06-10T09:30:00",
+        "caption": "Expected: Undetermined with no corrective work order."
+    },
+    {
+        "id": "pkg_thermal_jam",
+        "name": "Packaging thermal trip + jam alarms",
+        "machine_id": "PKG-L3",
+        "user_query": "PKG-L3 had repeated thermal trips and jam alarms. Motor temperature, vibration, and current were all elevated. Determine the likely root cause.",
+        "start_time": "2026-06-10T10:30:00",
+        "end_time": "2026-06-10T11:10:00",
+        "caption": "Expected: belt misalignment from combined telemetry and alarm evidence."
+    }
+]
 
 
 @st.cache_resource
@@ -51,6 +117,129 @@ def clear_current_result():
         "plantops_result_meta",
         None
     )
+    st.session_state.pop(
+        "sample_input_applied",
+        None
+    )
+
+
+
+def get_machine_label_for_id(
+    machine_labels,
+    machine_id
+):
+    for label, current_machine_id in machine_labels.items():
+        if current_machine_id == machine_id:
+            return label
+
+    return None
+
+
+def apply_sample_input(
+    sample,
+    machine_labels
+):
+    target_machine_id = sample["machine_id"]
+    target_label = get_machine_label_for_id(
+        machine_labels,
+        target_machine_id
+    )
+
+    if not target_label:
+        st.session_state[
+            "sample_input_error"
+        ] = (
+            f"Sample machine {target_machine_id} "
+            "is not available in the current dataset."
+        )
+        return
+
+    start_time = datetime.fromisoformat(
+        sample["start_time"]
+    )
+    end_time = datetime.fromisoformat(
+        sample["end_time"]
+    )
+
+    clear_current_result()
+
+    st.session_state["selected_machine"] = target_label
+    st.session_state[
+        f"incident_description_{target_machine_id}"
+    ] = sample["user_query"]
+    st.session_state[
+        f"start_date_{target_machine_id}"
+    ] = start_time.date()
+    st.session_state[
+        f"start_time_{target_machine_id}"
+    ] = start_time.time()
+    st.session_state[
+        f"end_date_{target_machine_id}"
+    ] = end_time.date()
+    st.session_state[
+        f"end_time_{target_machine_id}"
+    ] = end_time.time()
+
+    st.session_state[
+        "sample_input_applied"
+    ] = sample["name"]
+    st.session_state.pop(
+        "sample_input_error",
+        None
+    )
+
+
+def render_sample_inputs(
+    machine_labels
+):
+    if "show_sample_inputs" not in st.session_state:
+        st.session_state["show_sample_inputs"] = False
+
+    if st.sidebar.button(
+        "Sample inputs",
+        use_container_width=True
+    ):
+        st.session_state[
+            "show_sample_inputs"
+        ] = not st.session_state["show_sample_inputs"]
+
+    if not st.session_state["show_sample_inputs"]:
+        return
+
+    with st.sidebar.container(border=True):
+        st.caption(
+            "Use one of these simulated incident windows. "
+            "The machine, prompt and time range will be filled automatically."
+        )
+
+        available_machine_ids = set(
+            machine_labels.values()
+        )
+
+        for sample in SAMPLE_INPUTS:
+            if sample["machine_id"] not in available_machine_ids:
+                continue
+
+            st.button(
+                sample["name"],
+                key=f"sample_input_{sample['id']}",
+                use_container_width=True,
+                on_click=apply_sample_input,
+                args=(sample, machine_labels)
+            )
+
+            st.caption(sample["caption"])
+
+    if st.session_state.get("sample_input_applied"):
+        st.sidebar.success(
+            f"Loaded sample: "
+            f"{st.session_state['sample_input_applied']}"
+        )
+
+    if st.session_state.get("sample_input_error"):
+        st.sidebar.error(
+            st.session_state["sample_input_error"]
+        )
 
 
 def inject_styles():
@@ -649,6 +838,10 @@ def main():
         for machine in machines
     }
 
+    st.sidebar.markdown("### Demo shortcuts")
+    render_sample_inputs(machine_labels)
+    st.sidebar.markdown("---")
+
     selected_label = st.sidebar.selectbox(
         "Machine",
         options=list(machine_labels),
@@ -811,7 +1004,9 @@ def main():
     else:
         st.info(
             "Select a machine and incident window, "
-            "then run the investigation."
+            "then run the investigation. "
+            "Judges can use the Sample inputs button "
+            "in the sidebar to load valid demo scenarios."
         )
 
 

@@ -39,7 +39,7 @@ A normal chatbot can easily hallucinate causes or generate unsafe repair steps. 
 
 ## Architecture
 
-![Architecture Diagram](assets/architecture.png)
+![Architecture Diagram](assets/plantops_agent_archi.png)
 
 ---
 
